@@ -206,3 +206,7 @@ Maintain a `LEARNINGS.md` at the root of the backlog. It is a self-improvement l
 ## Exit codes
 
 `wiki` mirrors the tools it resembles. `0` is success: `tasks`, `list`, `property`, and the other query commands return `0` even with no results (like `ls`). Exit `1` comes from just two commands: `search` with no match (like `grep`) and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments): investigate.
+
+## CLI Tool
+
+If the `wiki` is not installed on this system, refer to https://raw.githubusercontent.com/agentic-wiki/wiki/refs/heads/main/README.md
