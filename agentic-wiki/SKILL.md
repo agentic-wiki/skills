@@ -90,6 +90,7 @@ wiki list --type concept --tag docker                 # concepts tagged docker
 wiki list --type note --prefix personal/              # notes inside personal/
 wiki list --type concept --tag docker --prefix tech/  # combine all three
 wiki list --type concept --format json                # structured output
+wiki list --type note --sort=timestamp                # recently changed first (--reverse: oldest first, for grooming)
 ```
 
 `--prefix` scopes to a path prefix and is available on `list`, `search`, `tasks`, `tags`, `properties`, and `property`. Use it to narrow queries in a large base.
