@@ -7,13 +7,22 @@ description: Manage a task backlog — see what is next, pick up work, mark it d
 
 **Goal:** keep a backlog that is always an honest, lean snapshot. The board answers "what's next" truthfully, every task entry is a durable record of what shipped and why, and the board never bloats with stale completions.
 
-The backlog is a wiki bundle: plain markdown files. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; the board is `index.md` (checkboxes linking to the entries).
+The base is a folder marked by `wiki.toml`. Every `.md` file is an entry with YAML frontmatter. Entries link by root-absolute paths (`/domain/file.md`). The backlog is a wiki bundle. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; the board is `index.md` (checkboxes linking to the entries).
 
 The quality of any query (`wiki tasks`, `wiki list --type task`, `wiki search`) is only as good as the indexing done before it. A checklist that says "what's next" is truthful only if the checkboxes, statuses, and links were kept current.
 
 The mechanical work of querying, checking integrity, and rewriting links when moving is where `wiki` helps. The judgment work — what to index, how to classify, when to prune — is yours.
 
+Run `wiki` inside the bundle (it walks up to find `wiki.toml`) or `wiki --root <dir>`.
+
 ## Use cases
+
+### Create the bundle
+
+```sh
+mkdir my-backlog && cd my-backlog
+wiki init .
+```
 
 ### See what is next
 
@@ -151,15 +160,17 @@ git pull --rebase       # always before editing
 git add -A && git commit -m "summary here" && git push
 ```
 
-Always pull before editing. On merge conflicts, resolve them yourself: understand and try to preserve the intent of both sides, merge frontmatter fields sensibly. Only escalate to the user if the conflict requires a judgment you cannot make.
+Always pull upstream before editing. On merge conflicts, resolve them yourself: understand and preserve the intent of both sides, merge frontmatter fields sensibly. Only escalate to the user if the conflict requires a judgment you cannot make.
 
 ## Conventions
 
 - **Single source of truth:** board checkbox checked exactly when entry `status` is `done`.
 - **Board never goes stale:** update the board in the same change as the status.
-- **Stay green:** `wiki check` passes. Warnings are informational — address when practical.
+- **Stay green:** `wiki check` passes. Warnings are informational: address when practical.
+- Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated — they are future knowledge.
+- Reserved files `index.md` / `log.md` carry no frontmatter, are exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
-- **Timestamp:** set `timestamp` (ISO 8601) when an entry meaningfully changes.
+- **Timestamp:** set `timestamp` (ISO 8601) when relevant, and when an entry meaningfully changes.
 
 ## Exit codes
 
