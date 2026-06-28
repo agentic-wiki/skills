@@ -7,27 +7,25 @@ Operating manuals an AI agent follows to drive the [`wiki` CLI](https://github.c
 
 They follow the open Agent Skills standard (a `SKILL.md` with `name`/`description` frontmatter), so the same files work in all compatible agents.
 
-## Install
+Paste the desired blocks below into your AI agent and it will install the skills:
 
-These are starting points to copy and customize, not pinned dependencies. Pick whichever fits:
+> [!TIP]
+> Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md into your skills directory.
 
-**Let your agent install it.** Tell your agent:
+> [!TIP]
+> Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-backlog/SKILL.md into your skills directory.
 
-> Install the skill at `https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md` into your skills directory, then help me adapt it.
+## Install details
 
-Your agent knows its own runtime's skills directory, so one instruction covers Claude Code, Codex, Pi, Hermes, and the rest, and it can customize the skill with you on the spot.
+These skills are just starting points to copy and customize. Tell your agent to adapt them if your workflow needs additional guidance.
 
-**Do it by hand.** Each skill is one `SKILL.md` in its own folder; drop the folder into your runtime's skills directory:
+**Agent runtimes and their skills directories:**
 
-| Runtime | Project | Global |
+| Runtime | Project-local | Global |
 |---|---|---|
 | Claude Code | `.claude/skills/` | `~/.claude/skills/` |
 | Codex | `.codex/skills/` | `~/.codex/skills/` |
 | Others (Pi, Hermes, …) | their `.<runtime>/skills/` equivalent | |
-
-```sh
-cp -r agentic-wiki agentic-backlog ~/.claude/skills/   # adjust the dir per runtime
-```
 
 **Fork the lot.** `git clone` this repo, copy the folders you want, and version your own changes.
 

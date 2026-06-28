@@ -5,54 +5,223 @@ description: The user's knowledge base is the source of truth for everything the
 
 # Operating a knowledge base with `wiki`
 
-**Goal:** make the knowledge base the reliable source of truth for what the user knows and is working on. Capture without friction, file precisely, recall fast, groom regularly, and never lose an entry or leave a link dangling. The files are the user's forever; you are the librarian.
+**Goal:** make the knowledge base the reliable source of truth. Capture without friction, file precisely, recall fast, groom regularly, and never leave a link dangling. The files are the user's forever; you are the librarian.
 
-The base is a folder marked by `wiki.toml`: every `.md` file is an entry with YAML frontmatter, linked by root-absolute paths (`/domain/file.md`). Run `wiki` inside it (it walks up to find `wiki.toml`) or `wiki --root <dir> …`.
+The base is a folder marked by `wiki.toml`. Every `.md` file is an entry with YAML frontmatter. Entries link by root-absolute paths (`/domain/file.md`). Run `wiki` inside the bundle (it walks up to find `wiki.toml`) or `wiki --root <dir>`.
 
-**For the complete, current commands and flags, run `wiki --help` and `wiki <command> -h`.** This skill is the judgment layer: when to reach for what, the lifecycle, the typical moves, and the conventions, not a copy of the reference (which would drift).
+## Division of labor
+
+- **You** read, write, and edit Markdown files directly — creating entries, composing frontmatter, drafting content, adding links. This is the judgment work.
+- **`wiki`** is the deterministic engine — queries, link graph, moves, tidying, health checks. It never creates content.
+
+## Use cases
+
+### Scaffold a new knowledge base
+
+```sh
+cd path/to/wiki-bundle
+wiki init .
+mkdir -p inbox/resources
+```
+
+Creates `wiki.toml`, `index.md`, and basic structure. Add `inbox/resources` to `.gitignore` (unprocessed binary files).
+
+### Capture a rough thought
+
+Create a markdown file in `inbox/` with `type: draft`. You write the file; `wiki` queries the queue.
+
+```markdown
+---
+type: draft
+title: Travel Idea
+---
+
+Raw note here. Flesh it out later.
+```
+
+```sh
+wiki list --type draft          # see what is waiting
+```
+
+An unprocessed binary attachment goes in the gitignored `inbox/resources/`; point the draft's `resource:` when there is one.
+
+### Refine an entry
+
+Read it back.
+
+```sh
+wiki read /inbox/cheap-flights-idea.md    # body only: frontmatter stripped
+
+# or print the raw file
+cat /inbox/cheap-flights-idea.md
+```
+
+### Promote a draft into its domain
+
+Ask the user one or two sharpening questions, then fill it in. Set the real `type` (add it to `wiki.toml` if new), move it, link it.
+
+```sh
+# preview
+wiki move --dry-run /inbox/cheap-flights-idea.md /personal/travel/flights-to-istanbul.md
+
+# apply
+wiki move /inbox/cheap-flights-idea.md /personal/travel/flights-to-istanbul.md
+```
+
+You can `--dry-run` to see which inbound links will be rewritten. After moving, link the entry from the domain `index.md` and from any related entries. **An unlinked entry is lost knowledge.**
+
+### Get an overview of the base
+
+```sh
+wiki status                                    # entries, links, tags, tasks, broken, orphans
+wiki property type --counts                    # entries by type
+wiki tags --counts --sort=count                # most-used tags
+```
+
+### Find entries by kind, topic, or location
+
+```sh
+wiki list --type concept                              # all concepts
+wiki list --type concept --tag docker                 # concepts tagged docker
+wiki list --type note --prefix personal/              # notes inside personal/
+wiki list --type concept --tag docker --prefix tech/  # combine all three
+wiki list --type concept --format json                # structured output
+```
+
+`--prefix` scopes to a path prefix and is available on `list`, `search`, `tasks`, `tags`, `properties`, and `property`. Use it to narrow queries in a large base.
+
+### Check what you know before answering the user
+
+When the user asks a question, search the KB first — it may already contain the answer, a partial answer, or context that shapes the response.
+
+```sh
+wiki search "docker networking"               # does the user have notes on this?
+wiki list --type concept --tag docker          # what concepts cover it?
+wiki read /tech/infra/docker-networking.md     # read the relevant entry
+```
+
+If nothing exists, note the gap — it is a candidate for a new entry.
+
+### Free-text search
+
+```sh
+wiki search "language model"                   # matching entries
+wiki search "language model" --lines           # file:line output
+wiki search "docker" --prefix tech/            # scoped to a subtree
+```
+
+Case-insensitive, literal substring, searches frontmatter and body. Prefer one distinctive word over a phrase. For structured queries on frontmatter fields (e.g. "all blocked tasks"), prefer `wiki list --type task` over search — `list` filters by declared fields.
+
+### Read an entry or understand its structure
+
+```sh
+wiki read /tech/infra/hetzner-server.md        # body, frontmatter stripped
+wiki outline /tech/infra/hetzner-server.md     # heading hierarchy
+```
+
+### Follow the link graph
+
+```sh
+wiki links /index.md                           # what this page points to
+wiki backlinks /tech/infra/hetzner-server.md   # what points here
+wiki backlinks /tech/infra/hetzner-server.md --format json   # structured: from/to/text/line
+wiki unresolved                                # promised but unwritten (a to-write list)
+wiki orphans                                   # nothing links in (lost knowledge)
+```
+
+### Turn an unresolved link into a real entry
+
+`wiki unresolved` lists links to entries that do not yet exist. Each one is a piece of knowledge the user has promised but not written. Pick one and create it.
+
+```sh
+wiki unresolved                                    # see what is missing
+# e.g. /tech/infra/docker.md is linked but does not exist
+wiki read /tech/infra/container-orchestration.md   # read the linker for context
+```
+
+Then create the target entry, set its `type`, and wire it into the graph. After creation, `wiki unresolved` should no longer list it.
+
+```sh
+wiki tags --counts                             # tags in use, with entry counts
+wiki properties                                # all frontmatter keys in use
+wiki property status --counts                  # values of one key, with counts
+```
+
+### List checkbox tasks across the base
+
+```sh
+wiki tasks                                     # open checkboxes only
+wiki tasks --all                               # open and done
+wiki tasks --done                              # done only
+```
+
+### Groom the base
+
+```sh
+wiki check                                     # health report (warnings exit 0; errors like broken links or missing type exit 1)
+wiki check --fix                               # apply safe auto-repairs (e.g. version sync)
+wiki tidy                                      # preview what would be canonicalized
+wiki tidy --all                                # apply: links to root-absolute, filenames to slugs
+```
+
+**After any batch of file edits, run `wiki check` before committing.** When grooming makes a judgment call (correcting facts, reclassifying an entry, merging duplicates) append a brief note to the domain's `log.md` under an ISO date heading only if meaningful. 
+
+### Re-check after the user edited files outside the agent
+
+The user may edit entries in Obsidian, VS Code, or any editor. Before your next commit, re-run the health check to catch any drift.
+
+```sh
+wiki check                                         # any new broken links or type issues?
+```
+
+### Explore the base's vocabulary
+
+**After any batch of file edits, run `wiki check` before committing.**
+
+### Export entries for external use
+
+```sh
+wiki list --type task --format csv                 # tasks as CSV
+wiki list --type concept --format tsv              # concepts as TSV
+wiki list --type dataset --format json             # datasets as JSON
+```
+
+### Improve linking while grooming
+
+When reading an entry during grooming, look for concepts, tools, or entities mentioned in the body that are not yet linked. If a corresponding entry exists, add a root-absolute link: `[Docker](/tech/infra/docker.md)`. If it does not exist, the broken link becomes an item in `wiki unresolved` — a to-write backlog. This cross-linking is one of the highest-value things you can do: it turns isolated notes into a navigable graph.
+
+### Persisting to git
+
+Git is optional. When present:
+
+```sh
+git pull --rebase       # always before editing
+git add -A && git commit -m "msg" && git push
+```
+
+Always pull before editing. On merge conflicts, resolve them yourself: preserve content from both sides, merge frontmatter fields sensibly. Only escalate to the user if the conflict requires a judgment you cannot make (e.g. two contradictory edits to the same paragraph).
 
 ## The model
 
-- **Folder is one stable home**, by domain (`finance/`, `tech/infra/`); relocate with `wiki move` (it rewrites every link).
-- **`type` is what kind** it is (`note`, `concept`, `dataset`, `task`, … from `wiki.toml`), required on every entry; `draft` is the "not yet classified" type for raw captures.
-- **Tags are everything cross-cutting** (`database`, `2026`, `needs-review`).
+- **Folder** = one stable home, by domain (`finance/`, `tech/infra/`). Relocate with `wiki move` (rewrites every inbound link).
+- **`type`** = what kind of entry (`note`, `concept`, `dataset`, … from `wiki.toml`). Required on every entry. `draft` is the unclassified inbox type.
+- **Tags** = everything cross-cutting (`database`, `2026`, `needs-review`). If a thing would ever appear in two folders, that axis is a tag, not a folder.
 
-If a thing would ever live in two folders at once, that second axis is a tag, not a folder.
+`wiki.toml` declares the type vocabulary. It is **extensible** — add new types when you introduce them so `wiki check` stops warning and introspection commands reflect them. `wiki check` warns on unknown types as a courtesy, never fails.
 
-## The lifecycle
+## The `resource:` field
 
-Six stages. They chain across sessions; you rarely run them all at once. Adding is as first-class as reading: a casual brain-dump and a good answer matter equally.
-
-- **Capture** (get it down, decide nothing). Jot a rough thought as a `type: draft` in `inbox/`; that queue is `wiki list --type draft`. For a file, drop it in the gitignored `inbox/resources/` and point the draft's `resource:` at it.
-  _Example:_ create `inbox/cheap-flights-idea.md` with `type: draft` and the raw note.
-- **Refine** (draft into a real entry). Read the draft back, ask the user the one or two questions that sharpen it, fill it in. Summary first, detail after.
-  _Example:_ `wiki read /inbox/cheap-flights-idea.md`, then expand it.
-- **Organize** (file it into the graph). Set the real `type`, move it into its domain, and link it from the domain `index.md` and related entries so it is never an orphan.
-  _Example:_ `wiki move /inbox/cheap-flights-idea.md /personal/travel/cheap-flights.md`, then link it in.
-- **Query / retrieve** (find anything). Start top-down from `index.md` and follow links, or target it:
-  - `wiki list --type concept --tag crypto --prefix tech/` (by kind, tag, subtree)
-  - `wiki search "language model" --lines` (free text; file:line)
-  - `wiki backlinks <path>` (what points here), `wiki unresolved` (promised but unwritten), `wiki orphans` (nothing links in)
-  - `wiki property status`, `wiki tags`, `wiki properties` (what values and vocabulary exist)
-  - `wiki read`/`outline` (an entry's body / its headings)
-- **Groom** (keep it healthy). `wiki check` (broken links, missing or unknown types, version drift), `wiki tidy` (canonicalize links and slug filenames), refile with `wiki move`. Periodically audit a stale or random entry and fix it; `wiki unresolved` is a standing to-write list.
-- **Persist** (it is a git repo). `git pull --rebase`, commit, push. `inbox/resources/` (binaries) and `.wiki/` (cache) are gitignored; drafts and entries are committed.
-
-## Good practices
-
-- **One entry, one thing.** A sharp entry is findable and linkable; split a page that wants two titles.
-- **Summary first, detail after.** The opening sentences are what retrieval and an LLM read first.
-- **Link as you write.** An unlinked entry is lost knowledge; wire it into an `index.md` and its relatives immediately.
-- **Navigate top-down, then target.** Read `index.md` and follow links before reaching for `search`.
-- **Decide structure at refine time, not capture.** Capturing must be frictionless; kind, domain, and tags come later.
-- **Let the tool move things.** Always `wiki move` / `wiki tidy`; never hand-edit a path or a link.
-- **Broken links are a backlog, not a bug** (`wiki unresolved` is the list).
-- **Keep it human-greppable.** Real Markdown, slug filenames, shallow folders: someone with no tools should still navigate it.
+`resource:` is a frontmatter pointer to the live thing an entry represents — a server console URL, an external CSV, a SaaS dashboard. It is **not** a body link and `wiki` does not treat it as an internal link. Distinct from `source` (provenance) and from markdown links in the body.
 
 ## Conventions
 
-- Every entry carries a `type` (`draft` until classified). Reserved `index.md`/`log.md` carry no frontmatter (the root `index.md` may carry `okf_version`).
-- Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated.
-- Slug filenames: lowercase, hyphenated, no spaces.
+- Every entry carries a `type` (`draft` until classified).
+- Reserved files `index.md` / `log.md` carry no frontmatter, are exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`.
+- Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated — they are future knowledge.
+- **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
 - Shallow folders: two levels by default (`wiki check` warns past three).
-- Keep `wiki check` green before each commit.
+- `wiki check` warnings are informational. Address when practical, do not block commits over them.
+
+## Exit codes
+
+`wiki` exits `0` when results are found, `1` when no results match (not an error — empty inbox, no orphans), and `2` on actual errors. Treat exit `1` as normal "none found." Exit `2` means investigate.
