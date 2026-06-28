@@ -252,7 +252,7 @@ Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log 
 
 ## Exit codes
 
-`wiki` mirrors the tools it resembles. `0` is success: `list`, `tasks`, `tags`, `properties`, `property`, `links`, `backlinks`, `orphans`, and `unresolved` return `0` even with no results (like `ls`). Exit `1` comes from just two commands: `search` with no match (like `grep`) and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments, unreadable file): investigate.
+`wiki` mirrors the tools it resembles. `0` is success: `list`, `tasks`, `tags`, `properties`, `property`, `links`, `backlinks`, `orphans`, and `unresolved` return `0` even with no results (like `ls`). Exit `1`: `search` with no match (like `grep`), `table` with no such table, and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments, unreadable file): investigate.
 
 ## CLI Tool
 
