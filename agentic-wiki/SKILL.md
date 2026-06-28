@@ -25,9 +25,9 @@ mkdir my-kb && cd my-kb
 wiki init .
 ```
 
-This creates `wiki.toml`, `index.md`, and basic example bundle.
+This creates `wiki.toml`, `index.md`, and a basic example bundle.
 
-After init, you create `inbox/` and `inbox/resources/` yourself. Add it to `.gitignore`. 
+After init, create `inbox/` and `inbox/resources/` yourself and add `inbox/resources` to `.gitignore`. This is a convention: `inbox/` as the holding area for unclassified thoughts (drafts) until they are promoted into the final location. Binary resource documents land on `inbox/resources` until they are processed, then removed.
 
 ### Capture a rough thought
 
@@ -72,7 +72,7 @@ After moving, link the entry from the domain `index.md` and from any related ent
 
 ### Adding new content
 
-When you have all the context and data required, you can add a record right away. Set the right `type` and properties and index it like you'd promote a draft.
+When you have all the context and data required, add a record directly (skip the inbox). Set the right `type` and properties and index it as you would a promoted draft.
 
 ### Get an overview of the base
 
@@ -106,8 +106,6 @@ wiki read /tech/infra/docker-networking.md     # read the relevant entry
 
 If nothing exists, note the gap: it is a candidate for a new entry.
 
-If you realize outstanding gap within the flow, add learning or suggestions to `LEARNINGS.md` and prompt the user to consider reviewing it.
-
 ### Free-text search
 
 ```sh
@@ -116,7 +114,7 @@ wiki search "language model" --lines           # file:line output
 wiki search "docker" --prefix tech/            # scoped to a subtree
 ```
 
-Case-insensitive, literal substring, searches frontmatter and body. Prefer one distinctive word over a phrase. For structured queries on frontmatter fields (e.g. "all blocked tasks"), prefer `wiki list --type task` over search — `list` filters by declared fields.
+Case-insensitive, literal substring, searches frontmatter and body. Prefer one distinctive word over a phrase. For structured queries on frontmatter fields (e.g. "all blocked tasks"), prefer `wiki list` over search: `list` can filter by declared fields.
 
 ### Read an entry or understand its structure
 
@@ -149,18 +147,18 @@ wiki read /tech/infra/container-orchestration.md   # read the linker for context
 
 When the user provides context/data, create the target entry, set its `type`, and wire it into the graph. After creation, `wiki unresolved` should no longer list it.
 
-#### Groom the base
+#### Health checks and tidying
 
 ```sh
-wiki check                                     # health report (warnings exit 0; errors like broken links or missing type exit 1)
-wiki check --fix                               # apply safe auto-repairs (e.g. version sync)
-wiki tidy                                      # preview what would be canonicalized
-wiki tidy --all                                # apply: links to root-absolute, filenames to slugs
+wiki check                          # health report (warnings exit 0; errors like broken links or missing type exit 1)
+wiki check --fix                    # apply safe auto-repairs (e.g. version sync)
+wiki tidy                           # preview what would be canonicalized
+wiki tidy --all                     # apply: links to root-absolute, filenames to slugs
 ```
 
-**After any batch of file edits, run `wiki check` before committing.** When grooming makes a judgment call — correcting facts, reclassifying an entry, merging duplicates — append a brief note to the domain's `log.md` under an ISO date heading. The entry is what is true now; `log.md` is why it changed.
+**After any batch of file edits, run `wiki check` before committing.** When grooming makes a judgment call (correcting facts, reclassifying an entry, merging duplicates) consider appending a brief note to the domain's `log.md` under an ISO date heading, if relevant. The entry is what is true now; `log.md` is the optional audit trail for *why* it changed.
 
-### Re-check after the user edited files outside the agent
+#### Re-check after the user edited files outside the agent
 
 The user may edit entries in Obsidian, VS Code, or any editor. Before your next commit, re-run the health check to catch any drift.
 
@@ -175,6 +173,8 @@ wiki tasks                                     # open checkboxes only
 wiki tasks --all                               # open and done
 wiki tasks --done                              # done only
 ```
+
+Any `.md` entry can contain `- [ ]` / `- [x]` checkboxes: they do not need to become `type: task` entries. `wiki tasks` surfaces them all. When a checkbox has an associated entry with a `status` frontmatter field, keep them in sync: the checkbox is checked exactly when `status` is `done`.
 
 ### Explore the base's vocabulary
 
@@ -196,11 +196,13 @@ wiki list --type dataset --format json             # datasets as JSON
 
 When reading an entry during grooming, look for concepts, tools, or entities mentioned in the body that are not yet linked. If a corresponding entry exists, add a root-absolute link: `[Docker](/tech/infra/docker.md)`. If it does not exist, the broken link becomes an item in `wiki unresolved` — a to-write backlog. This cross-linking is one of the highest-value things you can do: it turns isolated notes into a navigable graph.
 
-### Persist to git
+### Persisting to git
+
+Git is optional. When present:
 
 ```sh
 git pull --rebase       # always before editing
-git add -A && git commit -m "msg" && git push
+git add -A && git commit -m "summary here" && git push
 ```
 
 Always pull upstream before editing. On merge conflicts, resolve them yourself: understand and preserve the intent of both sides, merge frontmatter fields sensibly. Only escalate to the user if the conflict requires a judgment you cannot make.
@@ -210,22 +212,43 @@ Always pull upstream before editing. On merge conflicts, resolve them yourself: 
 - **Folder** = one stable home, by domain (`finance/`, `tech/infra/`). Relocate with `wiki move` (rewrites every inbound link).
 - **`type`** = what kind of entry (`note`, `concept`, `dataset`, … from `wiki.toml`). Required on every entry except `index.md` and `log.md`. `draft` is the unclassified inbox type.
 - **Tags** = everything cross-cutting (`database`, `2026`, `needs-review`). If a thing would ever appear in two folders, that axis is a tag, not a folder.
+- **`resource:`** = a frontmatter pointer to live external data a entry represents (a server console URL, an external CSV, a SaaS dashboard). It is **not** a body link and `wiki` does not treat it as an internal link. Distinct from `source` (provenance) and from markdown links in the body.
 
-`wiki.toml` declares the type vocabulary. It is **extensible**: add new types when you introduce them so `wiki check` stops warning and introspection commands reflect them. `wiki check` warns on unknown types as a courtesy, never fails.
+`wiki.toml` declares the type vocabulary. It is **extensible**: add new types when you introduce them so `wiki check` stops warning and introspection commands reflect them.
 
-## The `resource:` field
+### Reserved files
 
-`resource:` is a frontmatter pointer to the live data an entry represents: a server console URL, an external CSV, a SaaS dashboard. It is **not** a body link and `wiki` does not treat it as an internal link. Distinct from `source` (provenance) and from markdown links in the body.
+- **`index.md`**: the navigation surface for its folder. Carries no frontmatter, is exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`.
+- **`log.md`**: an optional audit trail for a folder. Use it when a domain benefits from a dated record of decisions, reclassifications, merges, or notable changes. Carries no frontmatter, exempt from `type`, skipped by `wiki orphans`. Create it only when it helps.
+
+### Pruning philosophy
+
+The bundle is the user's forever, but not every entry stays in its current shape. Superseded notes can be merged. Skipping noise is as important as indexing properly.
+
+Outdated drafts may be removed. When grooming makes a structural change (reclassifying, merging, retiring), entries reflect what is true *now*; if a `log.md` is relevant to the domain, append a dated note explaining why.
 
 ## Conventions
 
 - Every entry carries a `type` (`draft` until classified).
-- Reserved files `index.md` / `log.md` carry no frontmatter, are exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`.
 - Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated: they are future knowledge.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
-- Shallow folders: 2-3 levels ideally (`wiki check` warns past three).
+- Shallow folders: 2-3 levels ideally (`wiki check` warns past three). Advisory only: don't block work over it.
 - `wiki check` warnings are informational. Address when practical, do not block commits over them.
 - **Timestamp:** set `timestamp` (ISO 8601) when relevant, and when an entry meaningfully changes.
+
+## LEARNINGS.md
+
+Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log for the agent. Whenever you notice a gap, inconsistency, pattern, or improvement opportunity during grooming, capture it:
+
+```markdown
+## 2026-06-28
+
+- Tags `k8s` and `kubernetes` both exist — consolidate to `kubernetes`.
+- Three entries mention "billing migration" but none link to `/ops/billing-migration.md`.
+- `inbox/` has 12 unprocessed drafts; batch-promote or discard stale ones.
+```
+
+Suggest improvements that the user could adopt.
 
 ## Exit codes
 
