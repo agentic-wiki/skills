@@ -248,8 +248,6 @@ Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log 
 - `inbox/` has 12 unprocessed drafts; batch-promote or discard stale ones.
 ```
 
-Suggest improvements that the user could adopt.
-
 ## Exit codes
 
 `wiki` exits `0` when results are found, `1` when no results match (not an error — empty inbox, no orphans), and `2` on actual errors. Treat exit `1` as normal "none found." Exit `2` means investigate.

@@ -154,15 +154,17 @@ wiki tidy --all            # apply: root-absolute links, slug filenames
 
 ### Prune completed items
 
-The board is a short-lived working surface. Prune completed items that no longer earn their place. What to do with each category:
+The board is a short-lived working surface. The task entry is a working record: once work ships, its lasting value is captured elsewhere and the file can go. Prune completed items that no longer earn their place:
 
-| Category | Board checkbox line | Task entry file | `log.md` entry |
+| Category | Board checkbox line | Task entry file | Permanent record |
 |---|---|---|---|
-| **Routine** (small fix, chore) | Keep as `- [x]` for a few sprints, then remove | Delete | — |
-| **Milestone** (notable, audit-worthy) | Remove | Keep as permanent reference | Dated entry with outcome and key decisions |
-| **Superseded / merged** (obsolete, rolled into another) | Remove | Delete | Note what replaced it and why |
+| **Routine** (small fix, chore) | `- [x]` for a few sprints, then remove | Kept as `status: done` for a few sprints, then delete | — |
+| **Milestone** (notable, audit-worthy) | Remove | Delete | Dated entry in `log.md` with outcome and key decisions |
+| **Superseded / merged** (obsolete, rolled into another) | Remove | Delete | Brief note in `log.md`: what replaced it and why |
 
 When a task is superseded, merged, or obsolete, delete the file and its board line in the same change. Note the superseding in `log.md` (if present and relevant) and in the survivor entry.
+
+**If a milestone's outcome deserves to live in the broader KB** (not just as a log note, but as a searchable concept or decision record) create a new KB entry and link from `log.md`. Do not keep the task file for this purpose; promote relevant knowledge, discard the working record.
 
 ### Improve linking while grooming
 
@@ -200,8 +202,6 @@ Maintain a `LEARNINGS.md` at the root of the backlog. It is a self-improvement l
 - Tasks in `/3-graph/` all reference "the spec" but no `/3-graph/spec.md` exists — create it.
 - Tags `frontend` and `fe` both used — consolidate.
 ```
-
-Suggest improvements that the user could adopt.
 
 ## Exit codes
 
