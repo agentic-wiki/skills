@@ -7,7 +7,7 @@ description: Manage a task backlog — see what is next, pick up work, mark it d
 
 **Goal:** keep a backlog that is always an honest, lean snapshot. The board answers "what's next" truthfully, every task entry is a durable record of what shipped and why, and the board never bloats with stale completions.
 
-The base is a folder marked by `wiki.toml`. Every `.md` file is an entry with YAML frontmatter. Entries link by root-absolute paths (`/domain/file.md`). The backlog is a wiki bundle. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; the board is `index.md` (checkboxes linking to the entries).
+The base is a folder marked by `wiki.toml`. Every `.md` file is an entry with YAML frontmatter. Entries link by root-absolute paths (`/domain/file.md`). The backlog is a wiki bundle. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; the root board is `index.md` (checkboxes linking to the entries).
 
 The quality of any query (`wiki tasks`, `wiki list --type task`, `wiki search`) is only as good as the indexing done before it. A checklist that says "what's next" is truthful only if the checkboxes, statuses, and links were kept current.
 
