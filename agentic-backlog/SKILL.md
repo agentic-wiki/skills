@@ -1,65 +1,166 @@
 ---
 name: agentic-backlog
-description: Operate a wiki-format task backlog with the `wiki` CLI; see what is next, pick up work, mark it done, add tasks, add context, keep the board fresh. Use when a project has a non trivial backlog and a wiki bundle can solve the problem.
+description: Manage a task backlog — see what is next, pick up work, mark it done, add tasks, add context, keep the board fresh. Use when a project has a non-trivial backlog and a wiki bundle is the source of truth.
 ---
 
-# Operating a task backlog with `wiki`
+# Managing a task backlog
 
-**Goal:** keep a backlog that is always an honest, lean snapshot. `wiki tasks` answers "what's next" truthfully, every task entry is a durable record of what shipped and why, and the board never bloats with stale completions.
+**Goal:** keep a backlog that is always an honest, lean snapshot. The board answers "what's next" truthfully, every task entry is a durable record of what shipped and why, and the board never bloats with stale completions.
 
-The backlog is an agentic wiki bundle: `tasks/` holds `wiki.toml` and the task entries directly inside it. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; `tasks/index.md` is the board (checkboxes linking to the entries). Run `wiki` inside `tasks/`.
+The backlog is a wiki bundle: plain markdown files. Each task is a `type: task` entry; the work-kind (`feature`/`bug`/`debt`/`chore`) is a **tag**; the board is `index.md` (checkboxes linking to the entries).
 
-## See what is next
+The quality of any query (`wiki tasks`, `wiki list --type task`, `wiki search`) is only as good as the indexing done before it. A checklist that says "what's next" is truthful only if the checkboxes, statuses, and links were kept current.
 
-- `wiki tasks`: open board items (the working "what's next").
-- `wiki list --type task`: every task entry, regardless of status.
-- `wiki list --type task --tag debt`: filter by kind (`debt`, `feature`, …).
-- `wiki list --type task --prefix 3-graph-and-mutation/`: filter by phase.
-- `wiki property status --counts`: todo/done at a glance. `wiki tags --counts`: work by kind.
-- `wiki check`: confirm the bundle is healthy (links resolve, every entry typed). Run it before and after edits.
+The mechanical work of querying, checking integrity, and rewriting links when moving is where `wiki` helps. The judgment work — what to index, how to classify, when to prune — is yours.
 
-## Pick up a task
+## Use cases
 
-Choose one from `wiki tasks` (scope a big board with `--prefix <folder>/`), then open its linked entry for the full context and fields (`priority`, `due`). A task entry may hold its own inline `- [ ]` steps; `wiki tasks` surfaces every checkbox, entries and boards alike.
+### See what is next
 
-## Mark a task done
+The board (`index.md`) is the primary surface: its `- [ ]` checkboxes are what is next. `wiki tasks` collects every open checkbox in the bundle — it surfaces what is indexed, not what actually exists.
 
-In a single change, so the board never goes stale:
+```sh
+wiki tasks                              # open checkboxes
+wiki tasks --all                        # open and done
+wiki tasks --done  --prefix /topic-1/   # done only, within ./topic-1 folder
+wiki list --type task                   # every task entry, any status
+wiki property status --counts           # todo/done at a glance
+wiki tags --counts                      # work by kind
+```
+
+If `wiki tasks` misses something, the task was never indexed into the board. If it shows something done, the checkbox was never flipped. The tool reflects the index, not reality.
+
+### Pick up a task
+
+Choose the next one from the board, then read its entry for full context.
+
+```sh
+wiki read /3-graph-and-mutation/001-build-parser.md
+wiki outline /3-graph-and-mutation/001-build-parser.md   # heading map
+```
+
+A task entry may hold its own inline `- [ ]` substeps; `wiki tasks` surfaces every checkbox.
+
+### Add a task
+
+1. Check for duplicates:
+
+```sh
+wiki search "parser"           # distinctive word, case-insensitive substring
+wiki list --type task          # scan titles
+```
+
+2. Create the entry:
+
+```markdown
+---
+type: task
+status: todo
+priority: high
+tags: [feature]
+---
+
+Build the link graph parser.
+```
+
+File the entry in a subfolder when the backlog is organized by phase or area. Folder structure is the agent's judgment, slug naming is the only requirement.
+
+3. Add a checkbox to the board (`index.md`):
+
+```markdown
+- [ ] [Build the parser](/3-graph-and-mutation/001-build-parser.md)
+```
+
+4. Verify:
+
+```sh
+wiki check
+```
+
+### Updating task status
+
+Set the entry's frontmatter `status: todo | in-progress | blocked | done`.
+
+### When a task is done
+
+In a single change so the board never goes stale:
 
 1. Set the entry's frontmatter `status: done`.
-2. Flip its board checkbox `- [ ]` to `- [x]` (or move it under a `## Done` section).
-3. Append a short `Done:` line to the entry: what shipped, plus any decision worth keeping (an option you dropped, a trade-off). The entry is the durable record; keep the board line itself terse.
+2. Flip the board checkbox to `- [x]` (or move under `## Done`).
+3. You may append a short `Done:` line to the entry if useful: what shipped (if different), plus any decision worth keeping.
 
-Then `wiki tasks` should no longer list it, while `wiki list --type task` still shows the entry.
+**For milestones or anything worth keeping after the board is pruned, also append to the phase's `log.md`** under an ISO date heading:
 
-## Richer statuses
+```markdown
+## 2026-06-28
 
-`status` is a free field; a useful set is `todo`, `in-progress`, `blocked`, `done`. The board checkbox stays binary, so an `in-progress` or `blocked` task is still an open `- [ ]` and still appears in `wiki tasks`; the nuance lives in the entry's `status` (`wiki property status --counts` shows the spread). For a `blocked` task, record what it is waiting on and what unblocks it.
+- [010-parser](/3-graph/010-parser.md) — shipped the link graph parser. Dropped the nomnom approach, used bufio instead.
+```
 
-## Add a task
+`log.md` is the lasting audit trail; the board is a short-lived working surface.
 
-1. Create `tasks/<phase>/<NNN>-slug.md` with frontmatter: `type: task`, `status: todo`, a `priority`, and a kind tag (`tags: [feature]` or `[debt]`). Zero-pad `<NNN>` so inserting never forces a renumber.
-2. Add a checkbox to the board linking to it with a root-absolute path: `- [ ] [Title](/<phase>/<NNN>-slug.md)`.
-3. `wiki check` to confirm the link resolves and the type is known.
+If you find a board checkbox and entry `status` out of sync, correct both: the checkbox is checked exactly when `status` is `done`.
 
-## Move or renumber a task
+### Richer statuses
 
-`wiki move /<phase>/<old>.md /<phase>/<new>.md` relocates or renumbers a task entry and rewrites the board's link to it (and any other links) in the same step, so nothing dangles. Update the board text afterward if the title changed.
+`status` is a free field: `todo`, `in-progress`, `blocked`, `done`. The board checkbox stays binary — `in-progress` and `blocked` tasks remain `- [ ]` and appear in `wiki tasks`. The nuance lives in the entry's `status`.
 
-## Keep the backlog lean
+### Move or rename a task
 
-Removing matters as much as adding.
+```sh
+wiki move --dry-run /3-graph/001-parser.md /3-graph/010-parser.md
+# confirm, then:
+wiki move /3-graph/001-parser.md /3-graph/010-parser.md
+```
 
-- Before adding, `wiki search "<query>"` (a distinctive term from the title; the match is literal substring, so prefer one word over a phrase) to avoid duplicating an existing task.
-- When a task is finished-and-superseded, merged into another, or no longer relevant, delete the file and its board line in the *same* change, and note it in the survivor ("Supersedes X"). A stale open item is worse than none.
-- **Prune old completed items.** A board's `## Done` grows without bound, and `index.md` becomes dead weight you pay for every time. This matters as much as keeping each done line terse: **at the end of big phases prompt the user to prune completed items that no longer earn their place in the board.** Nothing is lost, the task files can remain and `wiki list --type task` still shows them, so the entries may be the archive. (If a lasting changelog was needed, rather than a giant Done list, append shipped milestones to a dated `log.md`.)
+Rewrites the board's link and any other inbound links in one step. Update the board text if the title changed.
+
+### Groom the base
+
+```sh
+wiki check                               # health report (warnings exit 0; errors exit 1)
+wiki check --fix                         # safe auto-repairs
+wiki tidy                                # preview canonicalization
+wiki tidy --all                          # apply: root-absolute links, slug filenames
+```
+
+**After any batch of edits, run `wiki check` before committing.**
+
+### Prune completed items
+
+A board's `## Done` grows without bound. At the end of big phases, prompt the user to prune completed items that no longer earn their place. What goes where:
+
+| What | Stays in board | Moves to `log.md` | Both deleted |
+|---|---|---|---|
+| Routine tasks (small fix, chore) | `- [x]` for a few sprints | — | then removed |
+| Milestones, audit-worthy work | — | date-entry in `log.md` | entry file remains |
+| Superseded / merged tasks | — | "001-parser superseded by 005-graph" | deleted file + board line |
+
+When a task is superseded, merged, or obsolete, delete the file and its board line in the same change. Note the superseding in `log.md` and in the survivor entry.
+
+### Improve linking while grooming
+
+When reviewing task entries, look for concepts, tools, or other tasks mentioned in the body that are not yet linked. Add root-absolute links to related entries. A task that references "[Docker](/tech/infra/docker.md)" is more navigable than one that just mentions "Docker." Cross-linking turns a flat list into a knowledge graph.
+
+### Persisting to git
+
+Git is optional. When present:
+
+```sh
+git pull --rebase       # always before editing
+git add -A && git commit -m "summary here" && git push
+```
+
+Always pull before editing. On merge conflicts, resolve them yourself: understand and try to preserve the intent of both sides, merge frontmatter fields sensibly. Only escalate to the user if the conflict requires a judgment you cannot make.
 
 ## Conventions
 
-- **Single source of truth:** the board checkbox is checked exactly when the entry's `status` is `done`; other statuses (`in-progress`, `blocked`) keep it open.
+- **Single source of truth:** board checkbox checked exactly when entry `status` is `done`.
 - **Board never goes stale:** update the board in the same change as the status.
-- **Stay green:** `wiki check` passes (no broken links, every entry typed).
-- **Persist together:** if the backlog belongs in a git repo; offer to commit when a round of changes is done, and sync with `git pull --rebase` before pushing.
-- **Slug filenames:** lowercase, hyphenated, no spaces.
-- **Timestamp:** set `timestamp` (ISO 8601, e.g. `2026-06-24`) when an entry meaningfully changes; `check` errors only on a malformed one, never on its absence.
-- Put enough context in each task file for a future developer, without bloat.
+- **Stay green:** `wiki check` passes. Warnings are informational — address when practical.
+- **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
+- **Timestamp:** set `timestamp` (ISO 8601) when an entry meaningfully changes.
+
+## Exit codes
+
+`wiki` exits `0` when results are found, `1` when no results match (not an error), and `2` on actual errors. Treat exit `1` as normal "none found."
