@@ -191,6 +191,7 @@ wiki property status --counts                  # values of one key, with counts
 wiki list --type task --format csv                 # tasks as CSV
 wiki list --type concept --format tsv              # concepts as TSV
 wiki list --type dataset --format json             # datasets as JSON
+wiki table /finance/expenses.md --format csv       # one dataset's table as rows (csv/json), for jq/duckdb
 ```
 
 ### Improve linking while grooming

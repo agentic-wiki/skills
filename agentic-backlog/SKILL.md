@@ -190,6 +190,7 @@ Always pull upstream before editing. On merge conflicts, resolve them yourself: 
 - Reserved files `index.md` / `log.md` carry no frontmatter, are exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`. `log.md` is optional — create it only when a domain benefits from an audit trail.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
 - **Timestamp:** set `timestamp` (ISO 8601) when relevant, and when an entry meaningfully changes.
+- Technical debt may have its own section/folder (`tag: debt`).
 
 ## LEARNINGS.md
 
