@@ -205,4 +205,4 @@ Maintain a `LEARNINGS.md` at the root of the backlog. It is a self-improvement l
 
 ## Exit codes
 
-`wiki` exits `0` when results are found, `1` when no results match (not an error), and `2` on actual errors. Treat exit `1` as normal "none found."
+`wiki` mirrors the tools it resembles. `0` is success: `tasks`, `list`, `property`, and the other query commands return `0` even with no results (like `ls`). Exit `1` comes from just two commands: `search` with no match (like `grep`) and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments): investigate.

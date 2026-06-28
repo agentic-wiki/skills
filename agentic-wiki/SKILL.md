@@ -150,7 +150,7 @@ When the user provides context/data, create the target entry, set its `type`, an
 #### Health checks and tidying
 
 ```sh
-wiki check                          # health report (warnings exit 0; errors like broken links or missing type exit 1)
+wiki check                          # health report (warnings exit 0, e.g. broken links; errors like a missing type exit 1)
 wiki check --fix                    # apply safe auto-repairs (e.g. version sync)
 wiki tidy                           # preview what would be canonicalized
 wiki tidy --all                     # apply: links to root-absolute, filenames to slugs
@@ -250,4 +250,4 @@ Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log 
 
 ## Exit codes
 
-`wiki` exits `0` when results are found, `1` when no results match (not an error — empty inbox, no orphans), and `2` on actual errors. Treat exit `1` as normal "none found." Exit `2` means investigate.
+`wiki` mirrors the tools it resembles. `0` is success: `list`, `tasks`, `tags`, `properties`, `property`, `links`, `backlinks`, `orphans`, and `unresolved` return `0` even with no results (like `ls`). Exit `1` comes from just two commands: `search` with no match (like `grep`) and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments, unreadable file): investigate.
