@@ -30,3 +30,11 @@ These skills are just starting points to copy and customize. Tell your agent to 
 **Fork the lot.** `git clone` this repo, copy the folders you want, and version your own changes.
 
 Then edit freely: these are conventions you make yours.
+
+## Periodic checks ("cron" jobs)
+
+Beyond the interactive skills above, you can ask your agent to run lightweight, scheduled checks on its own initiative. These are not skills: they are recurring prompts or reminders you set up outside the agent (a calendar reminder, a cron task that calls the agent, a recurring message in your chat). The agent runs them against the base and reports findings.
+
+- **[learnings](cron/learnings.md)**: review `LEARNINGS.md`, group by theme, separate quick fixes from decisions.
+- **[spot-check](cron/spot-check.md)**: pick 5–10 entries at random and check for grooming issues.
+- **[new-ideas](cron/new-ideas.md)**: scan the base for patterns, gaps, or connections that suggest directions worth exploring.
