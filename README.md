@@ -1,18 +1,25 @@
-# agentic-wiki skills
+# Agentic Wiki skills
 
 Operating manuals an AI agent follows to drive the [`wiki` CLI](https://github.com/agentic-wiki/wiki) over an [agentic-wiki](https://github.com/agentic-wiki/spec) knowledge base. The format and the tool stand on their own; these skills are an implementation layer, which you can tailor to your use case.
 
-- **[agentic-wiki](agentic-wiki/SKILL.md):** operating a knowledge base (capture, refine, promote, index, retrieve, maintain).
-- **[agentic-backlog](agentic-backlog/SKILL.md):** operating a task backlog that is itself a wiki bundle.
-
 They follow the open Agent Skills standard (a `SKILL.md` with `name`/`description` frontmatter), so the same files work in all compatible agents.
 
-Paste the desired blocks below into your AI agent and it will install the skills:
+## [Agentic Wiki](agentic-wiki/SKILL.md)
 
-> [!TIP]
+Operates a knowledge base (capture, refine, promote, index, retrieve, maintain) living in a standard wiki bundle using the `wiki` CLI.
+
+Install the skill by pasting the following text to your agent of choice:
+
+> [!NOTE]
 > Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md into your skills directory.
 
-> [!TIP]
+## [Agentic Backlog](agentic-backlog/SKILL.md)
+
+Operates a task backlog living in a standard wiki bundle using the `wiki` CLI.
+
+Install the skill by pasting the following text to your agent of choice:
+
+> [!NOTE]
 > Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-backlog/SKILL.md into your skills directory.
 
 ## Install details
