@@ -256,4 +256,10 @@ Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log 
 
 ## CLI Tool
 
-If the `wiki` is not installed on this system, refer to https://raw.githubusercontent.com/agentic-wiki/wiki/refs/heads/main/README.md
+If `wiki` is not installed on this system, install it with Homebrew (macOS or Linux):
+
+```sh
+brew install agentic-wiki/tap/wiki
+```
+
+For direct binaries or `go install`, see https://raw.githubusercontent.com/agentic-wiki/wiki/refs/heads/main/README.md
