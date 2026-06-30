@@ -211,7 +211,7 @@ Always pull upstream before editing. On merge conflicts, resolve them yourself: 
 
 ## The model
 
-- **Folder** = one stable home, by domain (`finance/`, `tech/infra/`). Relocate with `wiki move` (rewrites every inbound link).
+- **Folder** = one stable home, by domain (`finance/`, `tech/infra/`). Relocate or rename with `wiki move`, never read-delete-rewrite by hand: it rewrites every inbound link in one pass, whereas reading an entry then deleting and rewriting it elsewhere wastes tokens and leaves every backlink dangling.
 - **`type`** = what kind of entry (`note`, `concept`, `dataset`, … from `wiki.toml`). Required on every entry except `index.md` and `log.md`. `draft` is the unclassified inbox type.
 - **Tags** = everything cross-cutting (`database`, `2026`, `needs-review`). If a thing would ever appear in two folders, that axis is a tag, not a folder.
 - **`resource:`** = a frontmatter pointer to live external data a entry represents (a server console URL, an external CSV, a SaaS dashboard). It is **not** a body link and `wiki` does not treat it as an internal link. Distinct from `source` (provenance) and from markdown links in the body.
@@ -232,7 +232,7 @@ Outdated drafts may be removed. When grooming makes a structural change (reclass
 ## Conventions
 
 - Every entry carries a `type` (`draft` until classified).
-- Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated: they are future knowledge.
+- Root-absolute links (`/domain/file.md`), no wikilinks: if you find a `[[wikilink]]` (Obsidian writes them), rewrite it as a standard markdown link and tell the user to turn off Obsidian's wikilink setting. Broken links are tolerated: they are future knowledge.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
 - Shallow folders: 2-3 levels ideally (`wiki check` warns past three). Advisory only: don't block work over it.
 - `wiki check` warnings are informational. Address when practical, do not block commits over them.

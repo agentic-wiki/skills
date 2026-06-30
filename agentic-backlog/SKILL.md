@@ -128,7 +128,7 @@ wiki move --dry-run /3-graph/001-parser.md /3-graph/010-parser.md
 wiki move /3-graph/001-parser.md /3-graph/010-parser.md
 ```
 
-Rewrites the board's link and any other inbound links in one step. Update the board text if the title changed.
+`wiki move` renames or relocates the file and rewrites the board's link and every other inbound link, in one step. Always use it, never read-delete-rewrite by hand: hand-moving wastes tokens and leaves those links (and the board) pointing at a file that no longer exists. Update the board text if the title changed.
 
 ### Check dependencies and impact
 
@@ -186,7 +186,7 @@ Always pull upstream before editing. On merge conflicts, resolve them yourself: 
 - **Single source of truth:** board checkbox checked exactly when entry `status` is `done`.
 - **Board never goes stale:** update the board in the same change as the status.
 - **Stay green:** `wiki check` passes. Warnings are informational: address when practical.
-- Root-absolute links (`/domain/file.md`), no wikilinks. Broken links are tolerated — they are future knowledge.
+- Root-absolute links (`/domain/file.md`), no wikilinks: if you find a `[[wikilink]]` (Obsidian writes them), rewrite it as a standard markdown link and tell the user to turn off Obsidian's wikilink setting. Broken links are tolerated — they are future knowledge.
 - Reserved files `index.md` / `log.md` carry no frontmatter, are exempt from `type`, and skipped by `wiki orphans`. The root `index.md` may carry `okf_version`. `log.md` is optional — create it only when a domain benefits from an audit trail.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is the agent's judgment.
 - **Timestamp:** set `timestamp` (ISO 8601) when relevant, and when an entry meaningfully changes.
