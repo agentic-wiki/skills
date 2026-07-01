@@ -11,7 +11,7 @@ Operates a knowledge base (capture, refine, promote, index, retrieve, maintain) 
 Install the skill by pasting the following text to your agent of choice:
 
 > [!NOTE]
-> Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md into your skills directory.
+> Install the following skill by fetching https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md into your skills directory.
 
 ## [Agentic Backlog](agentic-backlog/SKILL.md)
 
@@ -20,7 +20,7 @@ Operates a task backlog living in a standard wiki bundle using the `wiki` CLI.
 Install the skill by pasting the following text to your agent of choice:
 
 > [!NOTE]
-> Install the skill at https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-backlog/SKILL.md into your skills directory.
+> Install the following skill by fetching https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-backlog/SKILL.md into your skills directory
 
 ## Install details
 
