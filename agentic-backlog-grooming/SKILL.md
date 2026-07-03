@@ -1,6 +1,6 @@
 ---
-name: backlog-grooming
-description: Cron-triggered AI agent skill for grooming the personal wiki backlog. Runs periodic health checks on tasks: detects stale items in soon/, identifies blocked tasks, flags orphans, and proposes moves between timeboxes (now/soon/someday/archive). Use when the backlog needs maintenance, triage, or a periodic review. Triggers on "groom backlog", "backlog maintenance", "stale tasks", or scheduled cron execution.
+name: agentic-backlog-grooming
+description: Cron-triggered AI agent skill for grooming the personal wiki backlog. Runs periodic health checks on tasks. Detects stale items in soon/, identifies blocked tasks, flags orphans, and proposes moves between timeboxes (now/soon/someday/archive). Use when the backlog needs maintenance, triage, or a periodic review. Triggers on "groom backlog", "backlog maintenance", "stale tasks", or scheduled cron execution.
 ---
 
 # Backlog Grooming Skill
