@@ -7,7 +7,7 @@ description: Cron-triggered AI agent skill for grooming the personal wiki backlo
 
 **Goal:** keep the backlog honest and lean. Items in `now/` are truly next; `soon/` is not a graveyard; blocked items get reviewed; stale undone work goes to `archive/`.
 
-Run `wiki` inside the bundle root (`/var/home/user/Documents/wiki-bundle`).
+Run `wiki` inside the appropriate bundle root.
 
 ## Backlog structure
 
