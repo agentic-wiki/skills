@@ -311,9 +311,14 @@ wiki property status --counts                  # values of one key, with counts
 
 ## LEARNINGS.md
 
-Maintain a `LEARNINGS.md` at the root of the base. It is a self-improvement log for the agent, not a user-facing document. Whenever you notice a gap, inconsistency, pattern, or improvement opportunity during grooming, capture it:
+Maintain a `LEARNINGS.md` at the root of the base: a self-improvement log for the agent, not a user-facing document. It is an ordinary entry (not a reserved file), so give it a `type` in frontmatter or `wiki check` errors. Whenever you notice a gap, inconsistency, pattern, or improvement opportunity during grooming, capture it:
 
 ```markdown
+---
+type: note
+title: Learnings
+---
+
 ## 2026-06-28
 
 - Tags `k8s` and `kubernetes` both exist — consolidate to `kubernetes`.
