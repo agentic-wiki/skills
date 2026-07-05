@@ -6,21 +6,12 @@ They follow the open Agent Skills standard (a `SKILL.md` with `name`/`descriptio
 
 ## [Agentic Wiki](agentic-wiki/SKILL.md)
 
-Operates a knowledge base (capture, refine, promote, index, retrieve, maintain) living in a standard wiki bundle using the `wiki` CLI.
+Operates a wiki bundle with the `wiki` CLI, as a knowledge base, a task backlog, or both: capture, refine, promote, index, retrieve, track what's next, and groom. A backlog is just a bundle whose entries are tasks, so one skill covers both.
 
 Install the skill by pasting the following text to your agent of choice:
 
 > [!NOTE]
 > Install the following skill by fetching https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-wiki/SKILL.md into your skills directory.
-
-## [Agentic Backlog](agentic-backlog/SKILL.md)
-
-Operates a task backlog living in a standard wiki bundle using the `wiki` CLI.
-
-Install the skill by pasting the following text to your agent of choice:
-
-> [!NOTE]
-> Install the following skill by fetching https://raw.githubusercontent.com/agentic-wiki/skills/main/agentic-backlog/SKILL.md into your skills directory
 
 ## Install details
 
@@ -45,3 +36,4 @@ Beyond the interactive skills above, you can ask your agent to run lightweight, 
 - **[learnings](cron/learnings.md)**: review `LEARNINGS.md`, group by theme, separate quick fixes from decisions.
 - **[spot-check](cron/spot-check.md)**: pick 5–10 entries at random and check for grooming issues.
 - **[new-ideas](cron/new-ideas.md)**: scan the base for patterns, gaps, or connections that suggest directions worth exploring.
+- **[groom-backlog](cron/groom-backlog.md)**: health-check a task backlog for stale, blocked, and orphaned items and propose moves.
