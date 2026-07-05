@@ -169,9 +169,9 @@ The board (`index.md`) is the primary surface: its `- [ ]` checkboxes are what i
 
 ```sh
 wiki tasks                              # open checkboxes
-wiki tasks --all                        # open and done
+wiki tasks --all                        # open and done (--done: done only)
 wiki tasks --prefix /backlog/           # only within the given folder
-wiki list --type task --done            # every task entry, done only
+wiki list --type task                   # every task entry (detailed)
 wiki property status --counts           # todo/done at a glance
 ```
 
