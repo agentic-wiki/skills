@@ -1,6 +1,6 @@
 ---
 name: agentic-wiki
-description: The user's knowledge base and task backlog live in a wiki bundle and are the source of truth for what they know, remember, know, manage, etc. Use whenever they jot or brain-dump a thought, ask what they know or where something is, look up / recall / search their notes, add / organize / link / refile entries, ask what is next or pick up / add / complete tasks, or groom and maintain the base. Triggers on any mention of their knowledge base, wiki, vault, notes, store, second brain, backlog, board, tasks (or similar).
+description: The user's knowledge base and task backlog live in a wiki bundle and are the source of truth for what they know, remember, manage, etc. Use whenever they jot or brain-dump a thought, ask what they know or where something is, look up/recall/search their notes, add/organize/link/refile entries, ask what is next or pick up/add/complete tasks, or groom and maintain the base. Triggers on any mention of their knowledge base, wiki, vault, notes, store, second brain, backlog, board, tasks (or similar).
 ---
 
 # Operating a wiki bundle
@@ -8,6 +8,16 @@ description: The user's knowledge base and task backlog live in a wiki bundle an
 **Goal:** make the bundle the reliable source of truth, whether it holds knowledge, tasks, or both. Capture without friction, file precisely, recall fast, keep the task board honest, groom regularly, and never leave a link dangling. The files are the user's forever; you are the librarian.
 
 The base is a folder marked by `wiki.toml`. Every `.md` file is an entry with YAML frontmatter. Entries link by root-absolute paths (`/domain/file.md`). Run `wiki` inside the bundle (it walks up to find `wiki.toml`) or `wiki --root <dir>`.
+
+## CLI Tool
+
+If `wiki` is not installed on this system, install it with Homebrew (macOS or Linux):
+
+```sh
+brew install agentic-wiki/tap/wiki
+```
+
+For direct binaries or `go install`, see https://raw.githubusercontent.com/agentic-wiki/wiki/refs/heads/main/README.md
 
 ## First, orient yourself
 
@@ -39,6 +49,11 @@ wiki init .
 
 This creates `wiki.toml`, `index.md`, and a basic example bundle (you can clean it).
 
+For workflow-specific scaffolds:
+- `wiki init --workflow product-docs` - product documentation base
+- `wiki init --workflow project-backlog` - team/project backlog
+- `wiki init --workflow org-base` - organizational knowledge base
+
 For a knowledge base, create `inbox/` and `inbox/resources/` yourself and add `inbox/resources` to `.gitignore`. This is a convention: `inbox/` is the holding area for unclassified thoughts (drafts) until they are promoted to a final location; binary resource documents land in `inbox/resources` until processed, then are removed.
 
 ## Capturing and refining knowledge
@@ -59,7 +74,7 @@ Raw note here. Flesh it out later.
 You write the file; `wiki` only queries the queue. Binary attachments go in `inbox/resources/`; point the draft's `resource:` at it.
 
 ```sh
-wiki list --type draft          # see what is waiting
+wiki list --where type=draft          # see what is waiting
 ```
 
 ### Refine a draft
@@ -94,7 +109,7 @@ When the user asks a question, search the base first: it may already hold the an
 
 ```sh
 wiki search "docker networking"              # does the user have notes including this?
-wiki list --type concept --tag docker        # what concepts cover it?
+wiki list --where type=concept --where tags=docker        # what concepts cover it?
 wiki read /tech/infra/docker-networking.md   # read the relevant entry
 ```
 
@@ -102,16 +117,26 @@ If nothing exists, note the gap: it might need a new entry.
 
 ### Find entries by kind, topic, or location
 
+The `--where` filter is used for frontmatter field queries. Repeat `--where` for AND conditions. Use `--where field!=value` for negation. Use `--where field=` (empty value) to test for empty/null fields.
+
 ```sh
-wiki list --type concept                              # all concepts
-wiki list --type concept --tag docker                 # concepts tagged docker
-wiki list --type note --prefix personal/              # notes inside personal/
-wiki list --type concept --tag docker --prefix tech/  # combine all three
-wiki list --type concept --format json                # structured output
-wiki list --type note --sort=timestamp                # recently changed first (--reverse: oldest first, for grooming)
+wiki list --where type=concept                              # all concepts
+wiki list --where type=concept --where tags=docker          # concepts tagged docker
+wiki list --where type=note --prefix personal/              # notes inside personal/
+wiki list --where type=concept --where tags=docker --prefix tech/  # combine all three
+wiki list --where type=concept --format json                # structured output
+wiki list --where type=note --sort=timestamp                # recently changed first
+wiki list --where type=note --sort=timestamp --reverse      # oldest first, for grooming
 ```
 
-`--prefix` scopes to a path prefix and is available on `list`, `search`, `tasks`, `tags`, `properties`, and `property`. Use it to narrow queries in a large base.
+Available filters:
+- `--where <field>=<value>` - exact match on frontmatter field (repeat for AND)
+- `--where <field>!=<value>` - negation (e.g., `--where status!=done`)
+- `--where <field>=` - test for empty/null field
+- `--prefix <path>` - scopes to a path prefix, available on `list`, `search`, `tasks`, `tags`, `properties`, `property`
+- `--sort=<field>` - sort by field (commonly `timestamp`, `title`)
+- `--reverse` - reverse sort order
+- `--format=<format>` - output format: `json`, `csv`, `tsv`, `table` (default)
 
 ### Free-text search
 
@@ -119,9 +144,11 @@ wiki list --type note --sort=timestamp                # recently changed first (
 wiki search "language model"                   # matching entries
 wiki search "language model" --lines           # file:line output
 wiki search "docker" --prefix tech/            # scoped to a subtree
+wiki search "docker" --any                     # broad search (any word matches)
+wiki search "exact phrase" --exact             # exact phrase match
 ```
 
-Case-insensitive, literal substring, searches frontmatter and body. Prefer one distinctive word over a phrase. For structured queries on frontmatter fields (e.g. "all blocked tasks"), prefer `wiki list` over search: `list` can filter by declared fields.
+Case-insensitive, literal substring, searches frontmatter and body. Prefer one distinctive word over a phrase. For structured queries on frontmatter fields (e.g., "all blocked tasks"), prefer `wiki list` over search: `list` can filter by declared fields.
 
 ### Read the entry structure
 
@@ -139,16 +166,24 @@ wiki unresolved                                  # promised but not written yet
 wiki orphans                                     # nothing links in (lost knowledge)
 ```
 
+### Read inline checkboxes
+
+For entries with inline task checkboxes (used in org-base project boards):
+
+```sh
+wiki checkboxes /projects/acme-migration.md      # list inline checkboxes in entry
+```
+
 ### Export entries for external use
 
 ```sh
-wiki list --type task --format csv                 # tasks as CSV
-wiki list --type concept --format tsv              # concepts as TSV
-wiki list --type dataset --format json             # datasets as JSON
+wiki list --where type=task --format csv                 # tasks as CSV
+wiki list --where type=concept --format tsv              # concepts as TSV
+wiki list --where type=dataset --format json             # datasets as JSON
 wiki table /finance/expenses.md --format csv       # one dataset's table as rows (csv/json), for jq/duckdb
 ```
 
-# Persisting to git
+## Persisting to git
 
 Git is optional. When present:
 
@@ -161,17 +196,17 @@ git add -A && git commit -m "summary here" && git push
 
 ## Task backlogs
 
-A wiki bundle can have entries of `type: task`. The work-kind (`feature` / `bug` / `debt` / `chore`) is a **tag**; the board/kanban is `index.md` (checkboxes linking to the entries). Tasks can link to any other entry (draft, note, event) for detail. Keep the board an honest, lean snapshot: it needs to answer "what's next" truthfully, each task entry is a durable record of what shipped and why, and it never bloats with stale completions. Sometimes it's good to precede `index.md` backlog with the main objective(s) behind the current scope.
+A wiki bundle can have entries of `type: task`. The work-kind (`feature` / `bug` / `debt` / `chore`) is a **tag**; the board/kanban is `index.md` (links to the entries). Tasks can link to any other entry (draft, note, event) for detail. Keep the board an honest, lean snapshot: it needs to answer "what's next" truthfully, each task entry is a durable record of what shipped and why, and it never bloats with stale completions. Sometimes it's good to precede `index.md` backlog with the main objective(s) behind the current scope.
 
 ### See what is next
 
-The board (`index.md`) is the primary surface: its `- [ ]` checkboxes are what is next. `wiki tasks` collects every open checkbox in the bundle.
+The board (`index.md`) is the primary surface: its links are what is next. `wiki tasks` collects every open checkbox in the bundle.
 
 ```sh
 wiki tasks                              # open checkboxes
 wiki tasks --all                        # open and done (--done: done only)
 wiki tasks --prefix /backlog/           # only within the given folder
-wiki list --type task                   # every task entry (detailed)
+wiki list --where type=task                   # every task entry (detailed)
 wiki property status --counts           # todo/done at a glance
 ```
 
@@ -181,7 +216,7 @@ Any `.md` entry can contain inline `- [ ]` / `- [x]` checkboxes; `wiki tasks` su
 
 ### Add a task
 
-1. Check for duplicates: `wiki search --prefix ... "parser"` (distinctive word) and scan `wiki list --prefix ... --type task`.
+1. Check for duplicates: `wiki search --prefix ... "parser"` (distinctive word) and scan `wiki list --prefix ... --where type=task`.
 2. Create the entry:
 
 ```markdown
@@ -197,11 +232,14 @@ Build the link graph parser.
 
 File it in a subfolder when the backlog is organized by timeframe, phase, area, etc. Folder structure is your judgment; slug naming is the only requirement.
 
-3. Add a checkbox to the board (`index.md`), with a clear, scannable label:
+3. Add a link to the board (`index.md`), with a clear, scannable label:
 
 ```markdown
-- [ ] [Build the parser](/3-graph-and-mutation/001-build-parser.md)
+## Now
+- [Build the parser](/3-graph-and-mutation/001-build-parser.md)
 ```
+
+Note: The board uses plain links (not checkboxes) because the task entry owns its `status`. A `- [ ]` checkbox on the board is only for trivial inline to-dos not worth their own entry.
 
 4. Verify with `wiki check`.
 
@@ -214,7 +252,7 @@ Choose one from the board, then read its entry for full context. A task entry ma
 Set the entry's frontmatter `status: todo | in-progress | blocked | done`. When a task is done, update everything in one change so the board never goes stale:
 
 1. Set `status: done`.
-2. Flip the board checkbox to `- [x]` (or move it under `## Done`).
+2. Remove the board link (done work leaves the board; do not leave checked boxes).
 3. Only if relevant: append a short `Done:` line to the entry: what shipped (if different from plan) and any decision worth keeping.
 
 If you find a board checkbox and entry `status` out of sync, correct both: the checkbox is checked exactly when `status` is `done`.
@@ -234,9 +272,9 @@ Many backlinks means completing it may unblock other work. Unresolved links are 
 
 The board is a short-lived working surface; the task file is a working record. Once work ships, its lasting value is captured elsewhere and the file can go.
 
-| Category | Board checkbox | Task file | Permanent record |
+| Category | Board link | Task file | Permanent record |
 |---|---|---|---|
-| **Routine** (small fix, chore) | `- [x]` for a few sprints, then remove | keep as `status: done` a few sprints, then delete | — |
+| **Routine** (small fix, chore) | remove | keep as `status: done` a few sprints, then delete | — |
 | **Milestone** (notable, audit-worthy) | remove | delete | dated entry in `log.md` with outcome and key decisions |
 | **Superseded / merged** | remove | delete | brief note in `log.md`: what replaced it and why |
 
@@ -252,7 +290,13 @@ wiki move --dry-run /3-graph/001-parser.md /3-graph/010-parser.md
 wiki move /3-graph/001-parser.md /3-graph/010-parser.md
 ```
 
-`wiki move` relocates the file and rewrites every inbound link (including the board) in one pass. Always use it, never read-delete-rewrite by hand: hand-moving wastes tokens and leaves every backlink dangling. If a rename changes a title, update the board's checkbox text too.
+`wiki move` relocates the file and rewrites every inbound link (including the board) in one pass. Always use it, never read-delete-rewrite by hand: hand-moving wastes tokens and leaves every backlink dangling. If a rename changes a title, update the board's link text too.
+
+Optionally rewrite frontmatter fields with `--include-frontmatter`:
+
+```sh
+wiki move --include-frontmatter /old/path.md /new/path.md
+```
 
 ### Turn an unresolved link into a real entry
 
@@ -288,11 +332,21 @@ wiki property status --counts                  # values of one key, with counts
 ## The model
 
 - **Folder** = one stable home, by domain (`finance/`, `tech/infra/`, or backlog phases like `3-graph/`). Relocate or rename with `wiki move`, never read-delete-rewrite by hand: it rewrites every inbound link in one pass, whereas hand-moving wastes tokens and leaves every backlink dangling.
-- **`type`** = what kind of entry (`note`, `concept`, `dataset`, `task`, … from `wiki.toml`). Required on every entry except `index.md` and `log.md`. `draft` is the unclassified inbox type.
+- **`type`** = what kind of entry (`note`, `concept`, `dataset`, `task`, `draft`, ... from `wiki.toml`). Required on every entry except `index.md` and `log.md`. `draft` is the unclassified inbox type.
 - **Tags** = everything cross-cutting (`database`, `2026`, `needs-review`, and task work-kinds like `feature` / `bug` / `debt`). If a thing would ever appear in two folders, that axis is a tag, not a folder.
 - **`resource:`** = a frontmatter pointer to live external data an entry represents (a server console URL, an external CSV, a SaaS dashboard). It is **not** a body link and `wiki` does not treat it as an internal link. Distinct from `source` (provenance) and from markdown links in the body.
 
 `wiki.toml` declares the type vocabulary. It is **extensible**: add new types when you introduce them so `wiki check` stops warning and introspection commands reflect them.
+
+### Folder entry patterns
+
+There are three distinct patterns for organizing entries with sub-pages:
+
+| Pattern | Example | Use when |
+|---|---|---|
+| **`thing.md` + `thing/`** | `projects/acme-migration.md` + `projects/acme-migration/` | A typed entry (project, concept, initiative) that grows sub-pages. The `thing.md` is the typed hub with frontmatter; the `thing/` folder holds related notes, specs, sub-pages. **This is the default for load-bearing entries.** |
+| **`thing/index.md`** | `projects/index.md` | A collection/map folder containing links to members. Typeless, serves as navigation surface for its level. Cannot carry frontmatter, so cannot be a typed entry itself. |
+| **`thing/*.md`** | `projects/acme-migration/chapter-1.md` | Leaf entries inside a `thing/` folder (sub-pages of a hub). |
 
 ### Reserved files
 
@@ -302,12 +356,43 @@ wiki property status --counts                  # values of one key, with counts
 ## Conventions
 
 - Every entry carries a `type` (`draft` until classified), except reserved `index.md` / `log.md`.
-- **Single source of truth:** a board checkbox is checked exactly when its entry's `status` is `done`; update the board in the same change as the status, so it never goes stale.
+- **Single source of truth:** a board checkbox is checked exactly when its entry's `status` is `done`; update the board in the same change as the status, so it never goes stale. Prefer plain links on the board (the entry owns its state) over checkboxes (which can drift).
 - Root-absolute links (`/domain/file.md`), no wikilinks: if you find a `[[wikilink]]` (Obsidian writes them), rewrite it as a standard markdown link and tell the user to turn off Obsidian's wikilink setting. Broken links are tolerated: they are future knowledge.
 - **Slug names for folders and files:** lowercase, dash-separated words, no spaces, no underscores. Folder structure is your judgment.
 - Shallow folders: 2-3 levels ideally (`wiki check` warns past three). Advisory only: do not block work over it.
 - `wiki check` warnings are informational. Address when practical, do not block commits over them.
 - **Timestamp:** set `timestamp` (ISO 8601) when relevant, and when an entry meaningfully changes.
+
+## Workflow types
+
+The bundle can be initialized with different workflows:
+
+### default - General knowledge base + task backlog
+
+A general-purpose wiki with notes, concepts, datasets, and a task backlog. Use for personal knowledge bases.
+
+### product-docs - Product documentation
+
+For technical product documentation. Organized by:
+- **Concepts, the graph**: Atomic `concept`, `reference`, `example` entries, one idea per page, richly linked
+- **Guides, the linear layer**: `guide` entries that read top-to-bottom, linking into concepts for depth
+
+Structure by product areas (e.g., `payments/`, `webhooks/`, `auth/`), not by type. Guides live in a separate `guides/` layer.
+
+### project-backlog - Team/project task tracker
+
+A kanban-style tracker where issues are files, the board is `index.md`, and tracking is frontmatter/tags/links. Organized with:
+- `active/` - committed work
+- `backlog/` - unscheduled/parked work (ignored by `orphans`)
+- `archive/` - shipped/dropped (ignored by `orphans`)
+
+Scheduling (`## Now` / `## Next`) lives in the board, not folders. Progress (`status`) is frontmatter.
+
+### org-base - Organizational knowledge base
+
+For internal org knowledge: projects, clients, products, people, teams, decisions, meetings. The graph is the point—wire entities together so `wiki backlinks /clients/acme.md` tells you everything Acme touches.
+
+Groups by entity type (projects/, clients/, products/, people/, etc.), each with an `index.md`.
 
 ## LEARNINGS.md
 
@@ -329,13 +414,3 @@ title: Learnings
 ## Exit codes
 
 `wiki` mirrors the tools it resembles. `0` is success: `list`, `tasks`, `tags`, `properties`, `property`, `links`, `backlinks`, `orphans`, and `unresolved` return `0` even with no results (like `ls`). Exit `1`: `search` with no match (like `grep`), `table` with no such table, and `check` with conformance errors (like a linter). Exit `2` is a real error (no bundle, bad arguments, unreadable file): investigate.
-
-## CLI Tool
-
-If `wiki` is not installed on this system, install it with Homebrew (macOS or Linux):
-
-```sh
-brew install agentic-wiki/tap/wiki
-```
-
-For direct binaries or `go install`, see https://raw.githubusercontent.com/agentic-wiki/wiki/refs/heads/main/README.md
